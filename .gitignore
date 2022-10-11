@@ -1,6 +1,0 @@
-__pycache__/
-runs/
-slurm/
-artifacts/
-hparams.yaml
-mlm.py
