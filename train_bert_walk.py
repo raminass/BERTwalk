@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import time
 from modeling.models import TransformerModel
-from modeling.data import data_collate_fn, BertWalkDataset
+from modeling.data import bert_walk_collate, BertWalkDataset
 from modeling.tokenizer import bert_walk_tokenizer
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     dataloader = DataLoader(
         dataset,
         batch_size=model_params["batch_size"],
-        collate_fn=partial(data_collate_fn, tokenizer=tokenizer),
+        collate_fn=partial(bert_walk_collate, tokenizer=tokenizer),
         shuffle=True,
     )
 

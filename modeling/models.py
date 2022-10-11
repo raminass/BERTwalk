@@ -58,9 +58,27 @@ class TransformerModel(nn.Module):
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
+    def hidden_cls(self, src, src_mask, src_key_padding_mask):
+        src = self.encoder(src) * math.sqrt(self.ninp)
+        src = self.pos_encoder(src)
+        output = self.transformer_encoder(src, src_mask, src_key_padding_mask)
+        return output[:, 0, :]  # take only cls vector
+
     def forward(self, src, src_mask, src_key_padding_mask):
         src = self.encoder(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src, src_mask, src_key_padding_mask)
         output = self.decoder(output)
         return output
+
+
+class BinaryClassification(nn.Module):
+    def __init__(self, checkpoint):
+        super(BinaryClassification, self).__init__()
+        self.pre_class = TransformerModel(checkpoint["model_params"], checkpoint["networks"])
+        self.pre_class.load_state_dict(checkpoint["model_state_dict"])  # loading pre-trained part
+        self.layer_out = nn.Linear(checkpoint["model_params"]["emsize"], 1)
+
+    def forward(self, src, src_mask, src_key_padding_mask):
+        x_cls = self.pre_class.hidden_cls(src, src_mask, src_key_padding_mask)
+        return self.layer_out(x_cls)
