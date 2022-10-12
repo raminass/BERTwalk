@@ -6,14 +6,15 @@ from modeling.models import BinaryClassification
 from modeling.data import TrainData, TestData, classifier_collate
 from torch.utils.data import DataLoader
 from sklearn.model_selection import StratifiedKFold
-from sklearn import metrics
+from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 from torch.utils.tensorboard import SummaryWriter
 from utils.commons import *
 import random
+import json
 
-random.seed(1984)
+# random.seed(1984)
 torch.manual_seed(1984)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -69,19 +70,19 @@ def train_fun(model, dataloader, model_params):
         print("-" * 89)
         print(f"| epoch {1+epoch:3d} | time: {elapsed:.2f}s | " f"loss {val_loss:.5f} | Acc {val_acc:.5f}")
         print("-" * 89)
-        writer.add_scalars("Loss", loss_dict, epoch + 1)
+        # writer.add_scalars("Loss", loss_dict, epoch + 1)
 
 
 if __name__ == "__main__":
 
-    writer = SummaryWriter(flush_secs=10)
+    # writer = SummaryWriter(flush_secs=10)
 
     # Loading pre-trained
     name = "Oct06_19-46-44_s-001"  # pre-trained model name
     checkpoint = torch.load(f"artifacts/{name}_model.pt")
     tokenizer = checkpoint["tokenizer"]
     # Loading pathway data, last token is the label
-    with open("/home/bnet/raminasser/node2vec/paths.txt", "r") as f:
+    with open("inputs/labeled_paths.txt", "r") as f:
         data = json.load(f)
     X = np.array([text.rsplit(" ", 1)[0] for text in data])  # walks only
     y = np.array([int(text.split(" ")[-1]) for text in data])  # labels only
@@ -91,12 +92,11 @@ if __name__ == "__main__":
         net.edge_index = net.edge_index.to(device)
         net.edge_weight = net.edge_weight.to(device)
 
-    checkpoint["model_params"]["epochs"] = 50
-    auc = []
-    tprs = []
-    aucs = []
-    mean_fpr = np.linspace(0, 1, 100)
-    fig, ax = plt.subplots()
+    checkpoint["model_params"]["epochs"] = 1
+
+    metrics = ["auc", "fpr", "tpr", "thresholds"]
+    results = {"test": {m: [] for m in metrics}}
+    auc_all = []
 
     # CV training
     skf = StratifiedKFold(n_splits=5, shuffle=True)
@@ -136,47 +136,13 @@ if __name__ == "__main__":
         y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
         y_test = [a.squeeze().tolist() for a in y_test]
         # calculating useful metrics
-        fpr, tpr, thresholds = metrics.roc_curve(y_test, y_pred_list, pos_label=1)
-        roc_auc = metrics.auc(fpr, tpr)
-        interp_tpr = np.interp(mean_fpr, fpr, tpr)
-        interp_tpr[0] = 0.0
-        tprs.append(interp_tpr)
-        aucs.append(roc_auc)
-        metrics.RocCurveDisplay.from_predictions(y_test, y_pred_list, name="ROC fold {}".format(i), ax=ax)
+        fpr, tpr, thresholds = roc_curve(y_test, y_pred_list, pos_label=1)
+        results["test"]["fpr"].append(fpr.tolist())
+        results["test"]["tpr"].append(tpr.tolist())
+        results["test"]["thresholds"].append(thresholds.tolist())
+        results["test"]["auc"].append(auc(fpr, tpr))
+        auc_all.append(auc(fpr, tpr))
 
-    # auc plot
-    # https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc_crossval.html#sphx-glr-auto-examples-model-selection-plot-roc-crossval-py
-    ax.plot([0, 1], [0, 1], linestyle="--", lw=2, color="r", label="Chance", alpha=0.8)
-    mean_tpr = np.mean(tprs, axis=0)
-    mean_tpr[-1] = 1.0
-    mean_auc = metrics.auc(mean_fpr, mean_tpr)
-    std_auc = np.std(aucs)
-    ax.plot(
-        mean_fpr,
-        mean_tpr,
-        color="b",
-        label=r"Mean ROC (AUC = %0.2f $\pm$ %0.2f)" % (mean_auc, std_auc),
-        lw=2,
-        alpha=0.8,
-    )
-
-    std_tpr = np.std(tprs, axis=0)
-    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-    ax.fill_between(
-        mean_fpr,
-        tprs_lower,
-        tprs_upper,
-        color="grey",
-        alpha=0.2,
-        label=r"$\pm$ 1 std. dev.",
-    )
-
-    ax.set(
-        xlim=[-0.05, 1.05],
-        ylim=[-0.05, 1.05],
-        title="",
-    )
-    ax.legend(loc="lower right")
-    plt.show()
-    plt.savefig("auc_another_one.pdf")
+    with open("results.json", "w") as fp:
+        json.dump(results, fp)
+    
