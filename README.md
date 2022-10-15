@@ -45,9 +45,7 @@ optional arguments:
 
 Models are located under `artifacts/`.
 
-1. run:
-
-   $ python3 extract_embedding_from_trained.py --model_name <trained model name>
+    $ python3 extract_embedding_from_trained.py --model_name <trained model name>
 
 ## Train Sequence Classifier
 
