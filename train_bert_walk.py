@@ -9,13 +9,14 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from utils.commons import *
 import random
+import argparse
 
 random.seed(1984)
 torch.manual_seed(1984)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# %%
+
 def parse_args():
 
     parser = argparse.ArgumentParser(description="Train the BBERTwalk model on MLM task.")

@@ -13,11 +13,20 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.commons import *
 import random
 import json
+import argparse
 
 # random.seed(1984)
 torch.manual_seed(1984)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description="Tune the trainded BBERTwalk model on classification task.")
+    parser.add_argument("--model_name", type=str, default="Oct06_19-46-44_s-001", help="Trained model name.")
+    parser.add_argument("--data_path", type=str, default="inputs/labeled_paths.txt", help="Data file.")
+
+    return parser.parse_args()
 
 
 def binary_acc(y_pred, y_test):
@@ -75,14 +84,13 @@ def train_fun(model, dataloader, model_params):
 
 if __name__ == "__main__":
 
-    # writer = SummaryWriter(flush_secs=10)
-
+    args = parse_args()
     # Loading pre-trained
-    name = "Oct06_19-46-44_s-001"  # pre-trained model name
+    name = args.model_name  # pre-trained model name
     checkpoint = torch.load(f"artifacts/{name}_model.pt")
     tokenizer = checkpoint["tokenizer"]
     # Loading pathway data, last token is the label
-    with open("inputs/labeled_paths.txt", "r") as f:
+    with open(args.data_path, "r") as f:
         data = json.load(f)
     X = np.array([text.rsplit(" ", 1)[0] for text in data])  # walks only
     y = np.array([int(text.split(" ")[-1]) for text in data])  # labels only

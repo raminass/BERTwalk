@@ -1,10 +1,20 @@
 from modeling.models import TransformerModel
 import torch
 import pandas as pd
+import argparse
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-name = "Oct06_19-46-44_s-001"
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(description="Extract the trained BBERTwalk embedding.")
+    parser.add_argument("--model_name", type=str, default="Oct06_19-46-44_s-001", help="Trained model name.")
+    return parser.parse_args()
+
+
+args = parse_args()
+name = args.model_name
 checkpoint = torch.load(f"artifacts/{name}_model.pt")
 model = TransformerModel(checkpoint["model_params"], checkpoint["networks"]).to(device)
 model.load_state_dict(checkpoint["model_state_dict"])
