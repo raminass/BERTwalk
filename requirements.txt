@@ -75,7 +75,7 @@ requests-oauthlib==1.3.1
 rsa==4.9
 scikit-learn==1.1.2
 scipy==1.9.1
-setuptools==63.4.1
+setuptools==65.5.1
 sip==6.6.2
 six==1.16.0
 slurmpy==0.0.8
