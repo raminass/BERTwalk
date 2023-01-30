@@ -3,9 +3,9 @@ from tokenizers import Tokenizer, models, trainers
 from pathlib import Path
 
 
-def bert_walk_tokenizer(data):
+def bert_walk_tokenizer(data, model_params):
     tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
-    my_tokens = Path("artifacts/tokenizer.pt")
+    my_tokens = Path(f"artifacts/tokenizer_{model_params['organism']}.pt")
     if my_tokens.exists():
         print("Reading Tokens from Disk")
         tokenizer = tokenizer.from_file(my_tokens._str)

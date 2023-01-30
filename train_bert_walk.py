@@ -35,7 +35,8 @@ def parse_args():
     parser.add_argument("--q", type=float, default=1, help="Inout hyperparameter. Default is 1.")
     parser.add_argument("--walk_length", type=int, default=10, help="Length of random walk.")
     parser.add_argument("--num_walks", type=int, default=10, help="Num of walks from each node.")
-
+    parser.add_argument("--organism", type=str, default='human', help="Type of organism.")
+    parser.add_argument('--input_graphs', nargs='*')
     return parser.parse_args()
 
 
@@ -122,15 +123,14 @@ if __name__ == "__main__":
         "num_walks": args.num_walks,
         "weighted": 1,
         "directed": 0,
+        "organism": args.organism,
     }
 
     # input networks
-    graphs = ["inputs/Costanzo-2016.txt", "inputs/Hu-2007.txt", "inputs/Krogan-2006.txt"]
-    union = "inputs/union.txt"  # calculated propabilistically
-
+    graphs = args.input_graphs
     # reading networks and corpus
-    data, pyg_graphs, _ = read_data(graphs, union, model_params)
-    tokenizer = bert_walk_tokenizer(data)  # loading Tokenizer
+    data, pyg_graphs = read_data(graphs, model_params)
+    tokenizer = bert_walk_tokenizer(data, model_params)  # loading Tokenizer
 
     # tokenizing each network nodes and copy to device
     for net in pyg_graphs:
@@ -165,3 +165,4 @@ if __name__ == "__main__":
         },
         f"artifacts/{writer.log_dir.split('/')[1]}_model.pt",
     )
+    

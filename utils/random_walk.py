@@ -10,6 +10,7 @@ Knowledge Discovery and Data Mining (KDD), 2016
 """
 import numpy as np
 import networkx as nx
+import random
 
 
 class Graph:

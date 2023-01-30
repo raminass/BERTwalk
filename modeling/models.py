@@ -82,3 +82,27 @@ class BinaryClassification(nn.Module):
     def forward(self, src, src_mask, src_key_padding_mask):
         x_cls = self.pre_class.hidden_cls(src, src_mask, src_key_padding_mask)
         return self.layer_out(x_cls)
+
+
+class TrainedBert(nn.Module):
+    def __init__(self, checkpoint):
+        super(TrainedBert, self).__init__()
+        self.pre_class = TransformerModel(checkpoint["model_params"], checkpoint["networks"])
+        self.pre_class.load_state_dict(checkpoint["model_state_dict"])  # loading pre-trained part
+        # self.layer_out = nn.Linear(checkpoint["model_params"]["emsize"], 3)
+
+    def forward(self, src, src_mask, src_key_padding_mask):
+        x_cls = self.pre_class.hidden_cls(src, src_mask, src_key_padding_mask)
+        # return self.layer_out(x_cls)
+        return x_cls
+
+
+class MultiClassification(nn.Module):
+    def __init__(self, checkpoint):
+        super(MultiClassification, self).__init__()
+        # self.pre_class = TransformerModel(checkpoint["model_params"], checkpoint["networks"])
+        # self.pre_class.load_state_dict(checkpoint["model_state_dict"])  # loading pre-trained part
+        self.layer_out = nn.Linear(checkpoint["model_params"]["emsize"], 3)
+
+    def forward(self, x_cls):
+        return self.layer_out(x_cls)
