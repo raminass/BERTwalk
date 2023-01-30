@@ -43,9 +43,10 @@ optional arguments:
 ```
 
 Example, training for yeast:
-    $ python train_bert_walk.py --walk_length 10 --organism yeast --epochs 100 \
-    $--input_graphs inputs/yeast_networks/Costanzo-2016.txt inputs/yeast_networks/Hu-2007.txt inputs/yeast_networks/Krogan-2006.txt
-    
+```
+    python train_bert_walk.py --walk_length 10 --organism yeast --epochs 100 \
+    --input_graphs inputs/yeast_networks/Costanzo-2016.txt inputs/yeast_networks/Hu-2007.txt inputs/yeast_networks/Krogan-2006.txt
+```
 ## Extract Embedding from Trained BERTwalk
 
 Models are located under `artifacts/`.
