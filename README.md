@@ -13,7 +13,7 @@ You can run `--help` option to view optional args:
 ```
 usage: train_bert_walk.py [-h] [--batch_size BATCH_SIZE] [--emsize EMSIZE] [--nhid NHID] [--nlayers NLAYERS] [--nhead NHEAD] [--dropout DROPOUT]
                           [--learning_rate LEARNING_RATE] [--epochs EPOCHS] [--K K] [--alpha ALPHA] [--mask_rate MASK_RATE] [--p P] [--q Q]
-                          [--walk_length WALK_LENGTH] [--num_walks NUM_WALKS]
+                          [--walk_length WALK_LENGTH] [--num_walks NUM_WALKS] [--input_graphs INPUT_GRAGHS]
 
 Train the BBERTwalk model on MLM task.
 
@@ -39,6 +39,7 @@ optional arguments:
                         Length of random walk.
   --num_walks NUM_WALKS
                         Num of walks from each node.
+  --input_graphs        Networks files to be integrated.
 ```
 
 ## Extract Embedding from Trained BERTwalk
